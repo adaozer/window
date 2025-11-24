@@ -7,6 +7,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	win.init(1024, 1024, 0, 0, "My Window");
 	core.init(win.hwnd, win.height, win.width);
 	while (true) {
+		core.resetCommandList();
 		core.beginFrame();
 		win.processMessages();
 		if (win.keys[VK_ESCAPE] == 1) break;
