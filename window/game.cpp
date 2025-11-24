@@ -5,7 +5,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	Window win;
 	Core core;
 	win.init(1024, 1024, 0, 0, "My Window");
-	core.init(win.hwnd, 1024, 1024);
+	core.init(win.hwnd, win.height, win.width);
 	while (true) {
 		core.beginFrame();
 		win.processMessages();
