@@ -124,8 +124,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="buffering.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="maths.h" />
+    <ClInclude Include="meshes.h" />
+    <ClInclude Include="ShaderManager.h" />
+    <ClInclude Include="triangle.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>
