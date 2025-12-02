@@ -180,6 +180,7 @@ public:
 
 
 class Cube {
+public:
 	Mesh m;
 	ShaderManager shaderManager;
 
@@ -259,8 +260,8 @@ class Cube {
 
 			Matrix Wgpu = planeWorld;
 			Matrix VPgpu = vp;
-			Wgpu.transpose();
-			VPgpu.transpose();
+			//Wgpu.transpose();
+			//VPgpu.transpose();
 
 			shaderManager.updateConstantVS("VS", "staticMeshBuffer", "W", &Wgpu);
 			shaderManager.updateConstantVS("VS", "staticMeshBuffer", "VP", &VPgpu);
@@ -274,4 +275,84 @@ class Cube {
 			shaderManager.psos.bind(core, "Triangle");
 			m.draw(core);
 		}
+};
+
+class Sphere {
+public:
+	Mesh m;
+	ShaderManager shaderManager;
+	int rings;
+	int segments;
+	float radius;
+	std::vector<STATIC_VERTEX> vertices;
+	std::vector<unsigned int> indices;
+
+	STATIC_VERTEX addVertex(const Vec3& p, const Vec3& n, float tu, float tv) {
+		STATIC_VERTEX v;
+		v.pos = p;
+		v.normal = n;
+		v.tangent = Vec3(0, 0, 0); // For now
+		v.tu = tu;
+		v.tv = tv;
+		return v;
+	}
+
+	void init(Core* core) {
+		for (int lat = 0; lat <= rings; lat++) {
+			float theta = lat * M_PI / rings;
+			float sinTheta = sinf(theta);
+			float cosTheta = cosf(theta);
+			for (int lon = 0; lon <= segments; lon++) {
+				float phi = lon * 2.0f * M_PI / segments;
+				float sinPhi = sinf(phi);
+				float cosPhi = cosf(phi);
+				Vec3 position(radius * sinTheta * cosPhi, radius * cosTheta,
+					radius * sinTheta * sinPhi);
+				Vec3 normal = position.normalize();
+				float tu = 1.0f - (float)lon / segments;
+				float tv = 1.0f - (float)lat / rings;
+				vertices.push_back(addVertex(position, normal, tu, tv));
+			}
+		}
+		for (int lat = 0; lat < rings; lat++)
+		{
+			for (int lon = 0; lon < segments; lon++)
+			{
+				int current = lat * (segments + 1) + lon;
+				int next = current + segments + 1;
+				indices.push_back(current);
+				indices.push_back(next);
+				indices.push_back(current + 1);
+				indices.push_back(current + 1);
+				indices.push_back(next);
+				indices.push_back(next + 1);
+			}
+		}
+		m.init(core, vertices, indices);
+		shaderManager.init(core, m.inputLayoutDesc);
+	}
+	void draw(Core* core, const Matrix& planeWorld, const Matrix& vp, float timeSeconds, const Vec2 lights[4]) {
+		core->beginRenderPass();
+
+		Shader& vs = shaderManager.shaders["VS"];
+		Shader& ps = shaderManager.shaders["PS"];
+
+		Matrix Wgpu = planeWorld;
+		Matrix VPgpu = vp;
+		Wgpu.transpose();
+		VPgpu.transpose();
+
+		shaderManager.updateConstantVS("VS", "staticMeshBuffer", "W", &Wgpu);
+		shaderManager.updateConstantVS("VS", "staticMeshBuffer", "VP", &VPgpu);
+
+		shaderManager.updateConstantPS("PS", "bufferName", "time", &timeSeconds);
+		shaderManager.updateConstantPS("PS", "bufferName", "lights", lights);
+
+		vs.apply(core);
+		ps.apply(core);
+
+		shaderManager.psos.bind(core, "Triangle");
+		m.draw(core);
+	}
+
 };

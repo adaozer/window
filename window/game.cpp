@@ -15,7 +15,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	core.init(win.hwnd, win.width, win.height);
 	GamesEngineeringBase::Timer tim;
 
-	Plane p;
+	Cube p;
 	p.init(&core);
 
 	const float SCALE_FACTOR = 0.1f;
@@ -23,7 +23,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	Matrix scaleMatrix = Matrix().scale(scaleVec);
 
 	Matrix planeWorld;
-	float theta = 90.0f;    
+	float theta = 10.0f;    
 	float fov = 1.0f;
 	float nearZ = 0.1f;
 	float farZ = 100.f;
@@ -43,7 +43,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		Vec3 to = Vec3(0, 1, 0);
 		Matrix v = Matrix().lookAt(to, from, Vec3(0, 1, 0));
 
-		Matrix vp = v.mul(proj);
+		Matrix vp = proj.mul(v);
 
 		Vec2 lights[4];
 		lights[0] = Vec2(100.0f, 100.0f);
