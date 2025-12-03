@@ -41,7 +41,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		if (win.keys[VK_ESCAPE] == 1) break;
 
 		Vec3 from = Vec3(11 * cos(time), 5, 11 * sinf(time));
-		Vec3 to = Vec3(0, 1, 0);
+		Vec3 to = Vec3(0, 0, 0);
 		Matrix v = Matrix().lookAt(to, from, Vec3(0, 1, 0));
 
 		Matrix VP = proj.mul(v);
@@ -50,7 +50,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		W = W.scale(scaler);
 		
 		core.beginFrame();
-
+		core.beginRenderPass();
 		gem.draw(&core, W, VP);
 
 		Vec3 trans(0.05, 0, 0);

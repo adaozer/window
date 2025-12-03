@@ -7,12 +7,12 @@ public:
 	GEMLoader::GEMModelLoader loader;
 	std::vector<GEMLoader::GEMMesh> gemmeshes;
 	std::vector<Mesh*> meshes;
-	std::vector<STATIC_VERTEX> vertices;
 
 	void load(Core* core, std::string filename) {
 		loader.load(filename, gemmeshes);
 		for (int i = 0; i < gemmeshes.size(); i++) {
 			Mesh* mesh = new Mesh();
+			std::vector<STATIC_VERTEX> vertices;
 			for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
 				STATIC_VERTEX v;
 				memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
@@ -50,7 +50,6 @@ public:
 	}
 
 	void draw(Core* core, Matrix& W, Matrix& VP) {
-		core->beginRenderPass();
 		psos.bind(core, "GEMObject");
 		shaderManager->updateConstantVS("vertexshader.hlsl", "staticMeshBuffer", "W", &W);
 		shaderManager->updateConstantVS("vertexshader.hlsl", "staticMeshBuffer", "VP", &VP);
