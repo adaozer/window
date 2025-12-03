@@ -50,7 +50,7 @@ public:
 		reflection->Release();
 	}
 
-	Shader* getShader(Core* core, std::string filename, bool isVertexShader) {
+	Shader* loadShader(Core* core, std::string filename, bool isVertexShader) {
 		auto it = shaders.find(filename);
 		if (it != shaders.end()) {
 			return &it->second;

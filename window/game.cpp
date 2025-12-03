@@ -10,6 +10,7 @@
 #include "Sphere.h"
 #include "ConstantBuffer.h"
 #include "GamesEngineeringBase.h"
+#include "GEMLoader.h"
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
 	Window win;
@@ -17,13 +18,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	win.init(1024, 1024, 0, 0, "My Window");
 	core.init(win.hwnd, win.width, win.height);
 	GamesEngineeringBase::Timer tim;
-	ShaderManager* shaderManager = new ShaderManager;
+	ShaderManager shaderManager;
 
-	Cube p(shaderManager);
+	Cube p(&shaderManager);
 	p.init(&core);
-
-	Matrix world;
-	Matrix vp;
 
 	float theta = 60.0f;    
 	float fov = 1.0f;
@@ -34,9 +32,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 	float time = 0.f;
 
-	VertexShaderCBStaticModel vssm;
-	vssm.W = world;
-	vssm.VP = vp;
+	GEMLoader::GEMModelLoader loader;
+	std::vector<GEMLoader::GEMMesh> gemmeshes;
+	loader.load("acacia_003.gem", gemmeshes);
 
 	while (true) {
 		float dt = tim.dt();
@@ -49,19 +47,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		Vec3 to = Vec3(0, 1, 0);
 		Matrix v = Matrix().lookAt(to, from, Vec3(0, 1, 0));
 
-		Matrix vp = proj.mul(v);
+		Matrix VP = proj.mul(v);
+		Matrix W;
 
 		core.beginFrame();
 
-		vssm.VP = vp;
-		p.draw(&core, &vssm);
+		p.draw(&core, W, VP);
 
 		Vec3 trans(5, 0, 0);
-		vssm.W = vssm.W.translate(trans);
-		p.draw(&core, &vssm);
-
-		Vec3 trans2(0, 0, 0);
-		vssm.W = vssm.W.translate(trans2);
+		W = W.translate(trans);
+		p.draw(&core, W, VP);
 		core.finishFrame();
 	}
 	core.flushGraphicsQueue();

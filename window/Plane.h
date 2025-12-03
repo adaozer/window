@@ -24,21 +24,18 @@ public:
 		indices.push_back(2); indices.push_back(1); indices.push_back(0);
 		indices.push_back(1); indices.push_back(2); indices.push_back(3);
 		mesh.init(core, vertices, indices);
-		vertexShader = shaderManager->getShader(core, "vertexshader.hlsl", true);
-		pixelShader = shaderManager->getShader(core, "pixelshader.hlsl", false);
+		vertexShader = shaderManager->loadShader(core, "vertexshader.hlsl", true);
+		pixelShader = shaderManager->loadShader(core, "pixelshader.hlsl", false);
 		psos.createPSO(core, "Plane", vertexShader->shader, pixelShader->shader, vertexLayoutCache.getStaticLayout());
 
 	}
 
-	void draw(Core* core, VertexShaderCBStaticModel* vssm) {
+	void draw(Core* core, Matrix& W, Matrix& VP) {
 		core->beginRenderPass();
 		psos.bind(core, "Plane");
 
-		Matrix Wgpu = vssm->W;
-		Matrix VPgpu = vssm->VP;
-
-		shaderManager->updateConstantVS("vertexshader.hlsl", "staticMeshBuffer", "W", &Wgpu);
-		shaderManager->updateConstantVS("vertexshader.hlsl", "staticMeshBuffer", "VP", &VPgpu);
+		shaderManager->updateConstantVS("vertexshader.hlsl", "staticMeshBuffer", "W", &W);
+		shaderManager->updateConstantVS("vertexshader.hlsl", "staticMeshBuffer", "VP", &VP);
 
 		vertexShader->apply(core);
 		mesh.draw(core);
