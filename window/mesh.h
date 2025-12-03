@@ -18,17 +18,6 @@ struct STATIC_VERTEX
 	float tv;
 };
 
-struct Vec2 {
-	float x, y;
-	Vec2() : x(0), y(0) {}
-	Vec2(float _x, float _y) : x(_x), y(_y) {}
-};
-
-struct VertexShaderCBStaticModel {
-	Matrix W;
-	Matrix VP;
-};
-
 class VertexLayoutCache {
 public:
 	static const D3D12_INPUT_LAYOUT_DESC& getStaticLayout() {

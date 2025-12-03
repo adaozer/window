@@ -23,10 +23,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	Cube p(&shaderManager);
 	p.init(&core);
 
-	float theta = 60.0f;    
+	float theta = 90.0f;    
 	float fov = 1.0f;
-	float nearZ = 0.1f;
-	float farZ = 100.f;
+	float nearZ = 0.01f;
+	float farZ = 100000.f;
 
 	Matrix proj = Matrix().projMatrix((float)win.width, (float)win.height, theta, fov, farZ, nearZ);
 
