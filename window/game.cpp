@@ -22,7 +22,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	ShaderManager shaderManager;
 
 	GEMObject gem(&shaderManager);
-	gem.init(&core);
+	gem.init(&core, "acacia_003.gem");
 
 	float theta = 90.0f;    
 	float fov = 1.0f;
@@ -53,9 +53,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 		gem.draw(&core, W, VP);
 
-		Vec3 trans(5, 0, 0);
+		Vec3 trans(0.05, 0, 0);
 		W = W.translate(trans);
-		gem.draw(&core, W, VP);
+		//gem.draw(&core, W, VP);
 		core.finishFrame();
 	}
 	core.flushGraphicsQueue();
