@@ -11,6 +11,7 @@
 #include "ConstantBuffer.h"
 #include "GamesEngineeringBase.h"
 #include "GEMLoader.h"
+#include "GEMObject.h"
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
 	Window win;
@@ -20,8 +21,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	GamesEngineeringBase::Timer tim;
 	ShaderManager shaderManager;
 
-	Cube p(&shaderManager);
-	p.init(&core);
+	GEMObject gem(&shaderManager);
+	gem.init(&core);
 
 	float theta = 90.0f;    
 	float fov = 1.0f;
@@ -31,10 +32,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	Matrix proj = Matrix().projMatrix((float)win.width, (float)win.height, theta, fov, farZ, nearZ);
 
 	float time = 0.f;
-
-	GEMLoader::GEMModelLoader loader;
-	std::vector<GEMLoader::GEMMesh> gemmeshes;
-	loader.load("acacia_003.gem", gemmeshes);
 
 	while (true) {
 		float dt = tim.dt();
@@ -49,14 +46,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 		Matrix VP = proj.mul(v);
 		Matrix W;
-
+		Vec3 scaler(0.01f, 0.01f, 0.01f);
+		W = W.scale(scaler);
+		
 		core.beginFrame();
 
-		p.draw(&core, W, VP);
+		gem.draw(&core, W, VP);
 
 		Vec3 trans(5, 0, 0);
 		W = W.translate(trans);
-		p.draw(&core, W, VP);
+		gem.draw(&core, W, VP);
 		core.finishFrame();
 	}
 	core.flushGraphicsQueue();

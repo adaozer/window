@@ -48,6 +48,9 @@
     <ClInclude Include="Sphere.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="GEMObject.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="window.cpp">
