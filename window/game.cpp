@@ -19,7 +19,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	GamesEngineeringBase::Timer tim;
 	ShaderManager* shaderManager = new ShaderManager;
 
-	Plane p(shaderManager);
+	Cube p(shaderManager);
 	p.init(&core);
 
 	Matrix world;
