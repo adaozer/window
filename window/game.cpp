@@ -3,9 +3,12 @@
 #include "maths.h"
 #include <fstream>
 #include <sstream>
-#include "pso.h"
-#include "meshes.h"
-#include "buffering.h"
+#include "PSOManager.h"
+#include "mesh.h"
+#include "Plane.h"
+#include "Cube.h"
+#include "Sphere.h"
+#include "ConstantBuffer.h"
 #include "GamesEngineeringBase.h"
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
@@ -14,16 +17,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	win.init(1024, 1024, 0, 0, "My Window");
 	core.init(win.hwnd, win.width, win.height);
 	GamesEngineeringBase::Timer tim;
+	ShaderManager* shaderManager = new ShaderManager;
 
-	Cube p;
+	Plane p(shaderManager);
 	p.init(&core);
 
-	const float SCALE_FACTOR = 0.1f;
-	Vec3 scaleVec(SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR);
-	Matrix scaleMatrix = Matrix().scale(scaleVec);
+	Matrix world;
+	Matrix vp;
 
-	Matrix planeWorld;
-	float theta = 10.0f;    
+	float theta = 60.0f;    
 	float fov = 1.0f;
 	float nearZ = 0.1f;
 	float farZ = 100.f;
@@ -31,6 +33,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	Matrix proj = Matrix().projMatrix((float)win.width, (float)win.height, theta, fov, farZ, nearZ);
 
 	float time = 0.f;
+
+	VertexShaderCBStaticModel vssm;
+	vssm.W = world;
+	vssm.VP = vp;
 
 	while (true) {
 		float dt = tim.dt();
@@ -45,15 +51,17 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 		Matrix vp = proj.mul(v);
 
-		Vec2 lights[4];
-		lights[0] = Vec2(100.0f, 100.0f);
-		lights[1] = Vec2(300.0f, 200.0f);
-		lights[2] = Vec2(500.0f, 400.0f);
-		lights[3] = Vec2(800.0f, 800.0f);
-
 		core.beginFrame();
-		p.draw(&core, planeWorld, vp, time, lights);
-	
+
+		vssm.VP = vp;
+		p.draw(&core, &vssm);
+
+		Vec3 trans(5, 0, 0);
+		vssm.W = vssm.W.translate(trans);
+		p.draw(&core, &vssm);
+
+		Vec3 trans2(0, 0, 0);
+		vssm.W = vssm.W.translate(trans2);
 		core.finishFrame();
 	}
 	core.flushGraphicsQueue();

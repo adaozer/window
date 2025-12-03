@@ -9,43 +9,8 @@
 #pragma comment(lib, "dxgi")
 #pragma comment(lib, "d3dcompiler.lib")
 
-class Barrier {
-public:
-	static void add(ID3D12Resource* res, D3D12_RESOURCE_STATES first, D3D12_RESOURCE_STATES second, ID3D12GraphicsCommandList4* commandList) {
-		D3D12_RESOURCE_BARRIER rb = {};
-		rb.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		rb.Transition.pResource = res;
-		rb.Transition.StateBefore = first;
-		rb.Transition.StateAfter = second;
-		rb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		commandList->ResourceBarrier(1, &rb);
-	}
-};
-
-class GPUFence {
-public:
-	ID3D12Fence* fence;
-	HANDLE eventHandle;
-	UINT64 value = 0;
-	void create(ID3D12Device5* device) {
-		device->CreateFence(value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-		eventHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
-	}
-	void signal(ID3D12CommandQueue* queue) {
-		queue->Signal(fence, ++value);
-	}
-	void wait() {
-		if (fence->GetCompletedValue() < value) {
-			fence->SetEventOnCompletion(value, eventHandle);
-			WaitForSingleObject(eventHandle, INFINITE);
-		}
-	}
-
-	~GPUFence() {
-		CloseHandle(eventHandle);
-		fence->Release();
-	}
-};
+#include "Fence.h"
+#include "Barrier.h"
 
 class Core {
 public:
@@ -251,8 +216,10 @@ public:
 	}
 
 	void flushGraphicsQueue() {
-		graphicsQueueFence[0].signal(graphicsQueue);
-		graphicsQueueFence[0].wait();
+		for (int i = 0; i < 2; i++) {
+			graphicsQueueFence[i].signal(graphicsQueue);
+			graphicsQueueFence[i].wait();
+		}
 	}
 
 	void beginFrame() {

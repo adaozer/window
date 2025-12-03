@@ -24,13 +24,28 @@
     <ClInclude Include="maths.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="meshes.h">
+    <ClInclude Include="mesh.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="buffering.h">
+    <ClInclude Include="ConstantBuffer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ShaderManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Barrier.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fence.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,7 +59,7 @@
     <ClCompile Include="core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pso.h">
+    <ClCompile Include="PSOManager.h">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
