@@ -14,22 +14,39 @@
 #include "GEMObject.h"
 #include "AnimatedModel.h"
 
+void InitDebugConsole()
+{
+	AllocConsole();
+	FILE* f;
+
+	// Redirect stdout to the new console
+	freopen_s(&f, "CONOUT$", "w", stdout);
+	freopen_s(&f, "CONOUT$", "w", stderr);
+
+	std::ios::sync_with_stdio(); // keep iostreams in sync with C stdio
+
+	std::cout.clear();
+	std::cerr.clear();
+
+	std::cout << "Debug console initialised.\n";
+}
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
 	Window win;
+	InitDebugConsole();
 	Core core;
 	win.init(1024, 1024, 0, 0, "My Window");
 	core.init(win.hwnd, win.width, win.height);
 	GamesEngineeringBase::Timer tim;
 	ShaderManager shaderManager;
 
-	Cube cube(&shaderManager);
-	cube.init(&core);
-
 	AnimatedModel am(&shaderManager);
-	am.load(&core, "TRex.gem");
+	am.load(&core, "models/TRex.gem");
+	auto& seq = am.animation.animations["run"]; // or whatever the key is
+	std::cout << "Uzi frames: " << seq.frames.size()
+		<< "  tps: " << seq.ticksPerSecond << std::endl;
 
 	GEMObject gem(&shaderManager);
-	gem.init(&core, "acacia_003.gem");
+	gem.init(&core, "models/bamboo.gem");
 
 	AnimationInstance animatedInstance;
 	animatedInstance.init(&am.animation, 0);
@@ -58,17 +75,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		Matrix W;
 		core.beginRenderPass();
 
-		cube.draw(&core, W, vp);
 		animatedInstance.update("run", dt);
-		if (animatedInstance.animationFinished() == true)
-		{
-			animatedInstance.resetAnimationTime();
-		}
-		W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(5,0,0));
+		if (animatedInstance.animationFinished() == true) animatedInstance.resetAnimationTime();
+		
+		W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f));
 
 		am.draw(&core, &animatedInstance, W, vp);
 
-		W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(10, 0, 0));
+		W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(5, 0, 0));
 		gem.draw(&core, W, vp);
 		core.finishFrame();
 	}

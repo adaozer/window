@@ -54,8 +54,14 @@
     <ClInclude Include="AnimatedModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Animation.h">
+    <ClInclude Include="Animation_fixed.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
