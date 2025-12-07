@@ -13,6 +13,7 @@
 #include "GEMLoader.h"
 #include "GEMObject.h"
 #include "AnimatedModel.h"
+#include "Camera.h"
 
 void InitDebugConsole()
 {
@@ -55,7 +56,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	float n = 0.01f;
 	float f = 100000.f;
 	float aspect = win.width / win.height;
+	Matrix p = Matrix::projMatrix(aspect, fov, f, n);
 
+	Camera cam;
 	float time = 0.f;
 
 	while (true) {
@@ -67,10 +70,32 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		if (win.keys[VK_ESCAPE] == 1) break;
 
 		time += dt;
-		
-		Matrix p = Matrix::projMatrix(aspect, fov, f, n);
-		Vec3 from = Vec3(11 * cos(time), 5, 11 * sinf(time));
-		Matrix v = Matrix::lookAt(Vec3(0, 0, 0), from, Vec3(0, 1, 0));
+		cam.yaw += win.dx * cam.sensitivity;
+		cam.pitch += win.dy * cam.sensitivity;
+		const float limit = 1.55;
+		if (cam.pitch > limit) cam.pitch = limit;
+		if (cam.pitch < -limit) cam.pitch = -limit;
+
+		win.dx = 0;
+		win.dy = 0;
+
+		Vec3 move(0, 0, 0);
+		Vec3 fwd = cam.forward();
+		Vec3 right = cam.right();
+
+		if (win.keys['W']) move += fwd;
+		if (win.keys['A']) move -= right;
+		if (win.keys['S']) move -= fwd;
+		if (win.keys['D']) move += right;
+
+		if (move.lengthSquare() > 0.f) {
+			move = move.normalize();
+			cam.position += move * (cam.moveSpeed * dt);
+		}
+
+		Matrix v = cam.viewMatrix();
+		//Vec3 from = Vec3(11 * cos(time), 5, 11 * sinf(time));
+		//Matrix v = Matrix::lookAt(Vec3(0, 0, 0), from, Vec3(0, 1, 0));
 		Matrix vp = v * p;
 		Matrix W;
 		core.beginRenderPass();

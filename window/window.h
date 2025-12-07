@@ -17,6 +17,9 @@ public:
 	int mousex;
 	int mousey;
 	bool mouseButtons[3];
+	bool firstMove = true;
+
+	int dx, dy;
 
 	void init(float window_height, float window_width, float window_x, float window_y, std::string window_name);
 

@@ -72,6 +72,15 @@ void Window::init(float window_height, float window_width, float window_x, float
 }
 
 void Window::updateMouse(int x, int y) {
+	if (firstMove) {
+		mousex = x;
+		mousey = y;
+		dx = 0; dy = 0;
+		firstMove = false;
+		return;
+	}
+	dx = mousex - x;
+	dy = mousey - y;
 	mousex = x;
 	mousey = y;
 }
