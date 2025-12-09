@@ -32,28 +32,28 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	core.init(win.hwnd, win.width, win.height);
 	GamesEngineeringBase::Timer tim;
 	ShaderManager shaderManager;
-	Texture tex;
+	TextureManager tex;
 
 	AllocConsole();
 	FILE* stream;
 	freopen_s(&stream, "CONOUT$", "w", stdout);
 
-	AnimatedModel am(&shaderManager, tex, "textures/T-rex_Base_Color_alb.png");
+	AnimatedModel am(&shaderManager, &tex, "textures/T-rex_Base_Color_alb.png");
 	am.load(&core, "models/TRex.gem");
 
 	AnimationInstance animatedInstance;
 	animatedInstance.init(&am.animation, 0);
 
-	GEMObject gem(&shaderManager, tex, "textures/bamboo branch_ALB.png");
+	GEMObject gem(&shaderManager, &tex, "textures/bamboo branch_ALB.png");
 	gem.init(&core, "models/bamboo.gem");
 
-	AnimatedModel am1(&shaderManager, tex, "textures/MaleDuty_1_OBJ_Serious_Packed0_Diffuse_alb.png");
+	AnimatedModel am1(&shaderManager, &tex, "textures/MaleDuty_1_OBJ_Serious_Packed0_Diffuse_alb.png");
 	am1.load(&core, "models/Soldier1.gem");
 
 	AnimationInstance animatedInstance1;
 	animatedInstance1.init(&am1.animation, 0);
 
-	AnimatedModel am2(&shaderManager, tex, "textures/AC5_Albedo_alb.png");
+	AnimatedModel am2(&shaderManager, &tex, "textures/AC5_Albedo_alb.png");
 	am2.load(&core, "models/AutomaticCarbine.gem");
 
 	listAnimationNames(am2.anim);
@@ -120,8 +120,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(5, 0, 0));
 		am1.draw(&core, &animatedInstance1, W, vp);
 
-		//W = Matrix::scale(Vec3(0.02f, 0.02f, 0.02f)) * Matrix::translate(Vec3(5.2, 0.55, -0.15));
-		W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(15, 0, 0));
+		W = Matrix::scale(Vec3(0.02f, 0.02f, 0.02f)) * Matrix::translate(Vec3(5.2, 0.55, -0.15));
+		//W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(15, 0, 0));
 		am2.draw(&core, &animatedInstance2, W, vp);
 
 		W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(10, 0, 0));

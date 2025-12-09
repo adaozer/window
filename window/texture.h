@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "core.h"
+#include <unordered_map>
 
 class Texture {
 public:
@@ -14,6 +15,6 @@ public:
 
 class TextureManager {
 public:
-	Texture texture;
-
-};
+	std::unordered_map<std::string, Texture*> textures;
+	Texture* loadTexture(Core* core, std::string filename);
+}; 

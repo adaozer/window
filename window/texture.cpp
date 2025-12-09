@@ -44,7 +44,6 @@ void Texture::load(Core* core, std::string filename) {
 	int height = 0;
 	int channels = 0;
 	unsigned char* texels = stbi_load(filename.c_str(), &width, &height, &channels, 0);
-	if (!texels) printf("Failed to load ", filename.c_str());
 	if (channels == 3) {
 		channels = 4;
 		unsigned char* texelsWithAlpha = new unsigned char[width * height * channels];
@@ -61,4 +60,15 @@ void Texture::load(Core* core, std::string filename) {
 		upload(core, width, height, channels, texels);
 	}
 	stbi_image_free(texels);
+}
+
+Texture* TextureManager::loadTexture(Core* core, std::string filename) {
+	auto it = textures.find(filename);
+	if (it != textures.end()) {
+		return it->second;
+	}
+	Texture* tex = new Texture;
+	tex->load(core, filename);
+	textures.insert({ filename, tex });
+	return tex;
 }

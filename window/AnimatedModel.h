@@ -18,11 +18,11 @@ public:
 	GEMLoader::GEMAnimation anim;
 	std::vector<std::string> textureFilenames;
 
-	Texture texture;
-
+	TextureManager* textureManager;
+	Texture* texture = nullptr;
 	std::string filepath;
 
-	AnimatedModel(ShaderManager* sm, Texture tx, std::string _filepath) : shaderManager(sm), texture(tx), filepath(_filepath) {}
+	AnimatedModel(ShaderManager* sm, TextureManager* tx, std::string _filepath) : shaderManager(sm), textureManager(tx), filepath(_filepath) {}
 	void load(Core* core, std::string filename)
 	{
 		GEMLoader::GEMModelLoader loader;
@@ -43,7 +43,7 @@ public:
 		}
 		vertexShader = shaderManager->loadShader(core, "vertexshader_animated.hlsl", true);
 		pixelShader = shaderManager->loadShader(core, "pixelshader_textured.hlsl", false);
-		texture.load(core, filepath);
+		texture = textureManager->loadTexture(core, filepath);
 		psos.createPSO(core, "AnimatedModel", vertexShader->shader, pixelShader->shader, vertexLayoutCache.getAnimatedLayout());
 		memcpy(&animation.skeleton.globalInverse, &gemanimation.globalInverse, 16 * sizeof(float));
 		for (int i = 0; i < gemanimation.bones.size(); i++)
@@ -91,7 +91,7 @@ public:
 		vertexShader->apply(core);
 
 		for (int i = 0; i < meshes.size(); i++) {
-			shaderManager->updateTexturePS(core, filepath, texture.heapOffset);
+			shaderManager->updateTexturePS(core, "tex", texture->heapOffset);
 			meshes[i]->draw(core);
 		}
 	}
