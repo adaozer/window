@@ -10,7 +10,7 @@ public:
 	std::vector<Mesh*> meshes;
 	std::vector<INSTANCE> instances;
 
-	void setInstances(std::vector<INSTANCE>& _instances) {
+	void setInstances(const std::vector<INSTANCE>& _instances) {
 		instances = _instances;
 	}
 
@@ -57,7 +57,7 @@ public:
 		sm.load(core, filename);
 
 		vertexShader = shaderManager->loadShader(core, "vertexshader_instanced.hlsl", true);
-		pixelShader = shaderManager->loadShader(core, "pixelshader_textured.hlsl", false);
+		pixelShader = shaderManager->loadShader(core, "pixelshader_alphatesting.hlsl", false);
 		texture = textureManager->loadTexture(core, filepath);
 		psos.createPSO(core, "InstancedGEM", vertexShader->shader, pixelShader->shader, vertexLayoutCache.getInstancedLayout());
 	}

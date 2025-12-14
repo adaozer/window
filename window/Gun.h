@@ -9,8 +9,8 @@ public:
 	std::string name = "AutomaticCarbine";
 	std::string actionName;
 
-	int bullets = 50;
-	int bulletCount = 50;
+	int bullets = 25;
+	int bulletCount = 25;
 
 	bool reloading = false;
 	float reloadTime = 0.f;

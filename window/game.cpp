@@ -30,6 +30,8 @@ void listAnimationNames(AnimatedModel am)
 	}
 
 }
+static float rand01() { return (float)rand() / (float)RAND_MAX; }            
+static float randRange(float a, float b) { return a + (b - a) * rand01(); }
 //center cursor
 // animasyon manageri tam anlamak
 // play functionlari
@@ -70,14 +72,26 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	bamboo.init(&core, "models/bamboo.gem", treeInstances);
 
 	std::vector<INSTANCE> grassInstances;
-	grassInstances.reserve(500);
+	grassInstances.reserve(2000); // grass should be dense
 
-	for (int i = 0; i < 500; i++) {
-		float x = (float)((rand() % 400) - 200);
-		float z = (float)((rand() % 400) - 200);
+	for (int i = 0; i < 2000; i++)
+	{
+		float x = randRange(-200.0f, 200.0f);
+		float z = randRange(-200.0f, 200.0f);
+
+		// small variation
+		float s = randRange(0.0045f, 0.010f);           // much smaller than bamboo
+		float yaw = randRange(0.0f, 2.0f * (float)M_PI);
+
+		// if your grass model pivot is not at the base, you may need a small negative y here
+		float y = 0.0f;
 
 		INSTANCE inst;
-		inst.W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(x, 0.f, z));
+		inst.W =
+			Matrix::scale(Vec3(10, 10, 10)) *
+			Matrix::rotateY(yaw) *
+			Matrix::translate(Vec3(x, y, z));
+
 		grassInstances.push_back(inst);
 	}
 
@@ -92,7 +106,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	animationManager.set("AutomaticCarbine", AnimationName::Reload, "17 reload");
 	animationManager.set("AutomaticCarbine", AnimationName::Inspect, "05 inspect");
 
-	animationManager.set("TRex", AnimationName::Idle, "run");
+	animationManager.set("TRex", AnimationName::Idle, "idle");
 	animationManager.set("TRex", AnimationName::Attack, "attack");
 
 	Gun gun;
@@ -201,7 +215,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 		grass.draw(&core, vp);
 
-		plane.draw(&core, W, vp);
+		//plane.draw(&core, W, vp);
 
 		sphere.draw(&core, W, vp);
 

@@ -8,7 +8,7 @@ public:
     float yaw = 0.f;
     float pitch = 0.f;
 
-    float moveSpeed = 5.f;
+    float moveSpeed = 15.f;
     float sensitivity = 0.005f;
 
     Vec3 up = Vec3(0, 1, 0);
