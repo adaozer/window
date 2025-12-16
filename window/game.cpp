@@ -218,7 +218,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 		grass.draw(&core, vp);
 
-		//floor.draw(&core, W, vp);
+		floor.draw(&core, W, vp);
 		skybox.draw(&core, W, vp);
 
 		W = Matrix::scale(Vec3(0.05, 0.05, 0.05));

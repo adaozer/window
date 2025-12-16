@@ -59,9 +59,9 @@ public:
 		sm.load(core, filename);
 
 		vertexShader = shaderManager->loadShader(core, "vertexshader_instanced.hlsl", true);
-		pixelShader = shaderManager->loadShader(core, "pixelshader_alphatesting.hlsl", false);
+		pixelShader = shaderManager->loadShader(core, "pixelshader_normalmapped.hlsl", false);
 		diffuseTex = textureManager->loadTexture(core, filepath);
-		//normalTex = textureManager->loadTexture(core, filepath2);
+		normalTex = textureManager->loadTexture(core, filepath2);
 		psos.createPSO(core, "InstancedGEM", vertexShader->shader, pixelShader->shader, vertexLayoutCache.getInstancedLayout());
 	}
 

@@ -12,7 +12,7 @@ struct PS_INPUT
 
 float4 PS(PS_INPUT input) : SV_Target0{
     float3 lightDir = normalize(float3(1.0, 1.0, 1.0));
-    float3 lightColour = float3(1.0, 1.0, 1.0);
+    float3 lightColour = float3(4.0, 4.0, 4.0);
     float PI = 3.1415926;
 
     float4 albedo = diffuseTex.Sample(samplerLinear, input.TexCoords);
