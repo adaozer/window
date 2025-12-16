@@ -12,12 +12,9 @@ public:
 	int health = 100;
 	bool dying = false;
 
-	Matrix world;
-
-	void init(AnimatedModel* m, Matrix& W, AnimationManager& animationManager) {
+	void init(AnimatedModel* m, AnimationManager& animationManager) {
 		model = m;
 		anim.init(&model->animation, 0);
-		world = W;
 		play(animationManager, AnimationName::Idle, true, true);
 	}
 
@@ -36,9 +33,9 @@ public:
 		play(animationManager, AnimationName::Death, true, false);
 	}
 
-	void draw(Core* core, Matrix& vp) {
+	void draw(Core* core, Matrix& W, Matrix& vp) {
 		if (!isAlive) return;
-		model->draw(core, &anim, world, vp);
+		model->draw(core, &anim, W, vp);
 	}
 
 	void update(float dt, AnimationManager& animationManager) {
@@ -69,9 +66,9 @@ class EnemyManager {
 public:
 	std::vector<Enemy> enemies;
 
-	void spawn(AnimatedModel* model, Matrix& W, AnimationManager& animationManager) {
+	void spawn(AnimatedModel* model, AnimationManager& animationManager) {
 		Enemy e;
-		e.init(model, W, animationManager);
+		e.init(model, animationManager);
 		enemies.push_back(e);
 	}
 
@@ -90,9 +87,9 @@ public:
 		} 
 	}
 
-	void draw(Core* core, Matrix& vp) {
+	void draw(Core* core, Matrix& W, Matrix& vp) {
 		for (auto& e : enemies) {
-			e.draw(core, vp);
+			e.draw(core, W, vp);
 		}
 	}
 };

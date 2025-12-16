@@ -8,6 +8,14 @@ public:
 	float radius;
 };
 
+static bool intersectsXZ(const BoundingSphere& a, const BoundingSphere& b)
+{
+	float dx = a.centre.x - b.centre.x;
+	float dz = a.centre.z - b.centre.z;
+	float rr = a.radius + b.radius;
+	return (dx * dx + dz * dz) < (rr * rr);
+}
+
 class Ray
 {
 public:

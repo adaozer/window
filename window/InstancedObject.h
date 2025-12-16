@@ -50,16 +50,17 @@ public:
 	Texture* normalTex = nullptr;
 	std::string filepath;
 	std::string filepath2;
+	std::string psType;
 
-	InstancedObject(ShaderManager* shadermanager, TextureManager* tx, std::string _filepath, std::string _filepath2) : shaderManager(shadermanager), 
-		textureManager(tx), filepath(_filepath), filepath2(_filepath2) {}
+	InstancedObject(ShaderManager* shadermanager, TextureManager* tx, std::string _filepath, std::string _filepath2, std::string _psType) : shaderManager(shadermanager), 
+		textureManager(tx), filepath(_filepath), filepath2(_filepath2), psType(_psType) {}
 
 	void init(Core* core, std::string filename, std::vector<INSTANCE>& instances) {
 		sm.setInstances(instances);
 		sm.load(core, filename);
 
 		vertexShader = shaderManager->loadShader(core, "vertexshader_instanced.hlsl", true);
-		pixelShader = shaderManager->loadShader(core, "pixelshader_normalmapped.hlsl", false);
+		pixelShader = shaderManager->loadShader(core, psType, false);
 		diffuseTex = textureManager->loadTexture(core, filepath);
 		normalTex = textureManager->loadTexture(core, filepath2);
 		psos.createPSO(core, "InstancedGEM", vertexShader->shader, pixelShader->shader, vertexLayoutCache.getInstancedLayout());

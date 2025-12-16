@@ -31,8 +31,19 @@ void listAnimationNames(AnimatedModel am)
 	}
 	
 }
-static float rand01() { return (float)rand() / (float)RAND_MAX; }            
+static float rand01() { return (float)rand() / (float)RAND_MAX; }
 static float randRange(float a, float b) { return a + (b - a) * rand01(); }
+
+static void sampleDisk(float R, float& outX, float& outZ) {
+	float a = randRange(0.0f, 2.0f * (float)M_PI);
+	float r = sqrtf(rand01()) * R;
+	outX = cosf(a) * r;
+	outZ = sinf(a) * r;
+}
+// instancing, animation manager, enemy, gun
+// collision thingy
+//skybox sphere bound thingy
+
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
 	Window win;
@@ -56,44 +67,48 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	AnimatedModel enemyModel(&shaderManager, &tex, "textures/T-rex_Base_Color_alb.png", "textures/T-rex_Base_Color_nh.png");
 	enemyModel.load(&core, "models/TRex.gem");
 
-	std::vector<INSTANCE> treeInstances;
-	treeInstances.reserve(500);
+	const int TREE_COUNT = 1000;
+	const int GRASS_COUNT = 10000;
+	const float SPAWN_R = 500;  
 
-	for (int i = 0; i < 500; i++) {
-		float x = (float)((rand() % 400) - 200);
-		float z = (float)((rand() % 400) - 200);
+	std::vector<INSTANCE> treeInstances;
+	treeInstances.reserve(TREE_COUNT);
+
+	for (int i = 0; i < TREE_COUNT; i++) {
+		float x, z;
+		sampleDisk(SPAWN_R, x, z);
+
+		float yaw = randRange(0.0f, 2.0f * (float)M_PI);
 
 		INSTANCE inst;
-		inst.W = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(x, 0.f, z));
+		inst.W = Matrix::scale(Vec3(0.015, 0.015, 0.015))
+			* Matrix::rotateY(yaw)
+			* Matrix::translate(Vec3(x, 0.0f, z));
+
 		treeInstances.push_back(inst);
 	}
 
-	InstancedObject bamboo(&shaderManager, &tex, "textures/bamboo branch_ALB.png", "textures/bamboo branch_NH.png");
+	InstancedObject bamboo(&shaderManager, &tex, "textures/bamboo branch_ALB.png", "textures/bamboo branch_NH.png", "pixelshader_normalmapped.hlsl");
 	bamboo.init(&core, "models/bamboo.gem", treeInstances);
 
 	std::vector<INSTANCE> grassInstances;
-	grassInstances.reserve(2000);
+	grassInstances.reserve(GRASS_COUNT);
 
-	for (int i = 0; i < 2000; i++)
-	{
-		float x = randRange(-200.0f, 200.0f);
-		float z = randRange(-200.0f, 200.0f);
+	for (int i = 0; i < GRASS_COUNT; i++) {
+		float x, z;
+		sampleDisk(SPAWN_R, x, z);
 
-		float s = randRange(0.0045f, 0.010f);          
 		float yaw = randRange(0.0f, 2.0f * (float)M_PI);
 
-		float y = 0.0f;
-
 		INSTANCE inst;
-		inst.W =
-			Matrix::scale(Vec3(10, 10, 10)) *
-			Matrix::rotateY(yaw) *
-			Matrix::translate(Vec3(x, y, z));
+		inst.W = Matrix::scale(Vec3(10.f, 10.f, 10.f))
+			* Matrix::rotateY(yaw)
+			* Matrix::translate(Vec3(x, 0.0f, z));
 
 		grassInstances.push_back(inst);
 	}
 
-	InstancedObject grass(&shaderManager, &tex, "textures/TX_GrassClumps_01_ALB.png", "textures/TX_GrassClumps_01_NH.png");
+	InstancedObject grass(&shaderManager, &tex, "textures/TX_GrassClumps_01_ALB.png", "textures/TX_GrassClumps_01_NH.png", "pixelshader_alphatesting.hlsl");
 	grass.init(&core, "models/Grass_Clump_01c.gem", grassInstances);
 
 	AnimationManager animationManager;
@@ -110,9 +125,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 	Gun gun;
 	gun.init(&gunModel, animationManager);
-
-	Matrix enemyW = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(Vec3(10, 0, 0));
-	enemyManager.spawn(&enemyModel, enemyW, animationManager);
+	
+	enemyManager.spawn(&enemyModel, animationManager);
+	BoundingSphere enemyBounds;
+	enemyBounds.radius = 4.f;
 
 	Plane floor(&shaderManager, &tex, "textures/wood_chip_path_diff_4k.png", "textures/wood_chip_path_nor_dx_4k.png");
 	floor.init(&core);
@@ -180,22 +196,75 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 		Vec3 forward = Vec3(std::cos(yaw), 0.0f, std::sin(yaw));
 		Vec3 right = Vec3(-std::sin(yaw), 0.0f, std::cos(yaw));
-
+		Vec3 enemyLoc(10, 0, 0);
+		enemyBounds.centre = enemyLoc;
+		playerBounds.centre = cam.pos;
 		Vec3 move(0.f, 0.f, 0.f);
-
 		if (win.keys['W']) move += forward;
 		if (win.keys['A']) move += right;
 		if (win.keys['S']) move -= forward;
 		if (win.keys['D']) move -= right;
 		if (win.keys['R']) gun.reload(animationManager);
 		if (win.keys['F']) gun.inspect(animationManager);
-
+		Vec3 desiredStep(0, 0, 0);
 		if (move.lengthSquare() > 0.f) {
 			move = move.normalize();
-			cam.pos += move * cam.moveSpeed * dt;
+			desiredStep = move * cam.moveSpeed * dt;
 		}
-		cam.pos.y = 3.5;
+
+		BoundingSphere candidate = playerBounds;
+		candidate.centre = cam.pos + desiredStep;
+		if (!intersectsXZ(candidate, enemyBounds))
+		{
+			cam.pos = candidate.centre;
+		}
+		else
+		{
+			Vec3 toPlayer = candidate.centre - enemyBounds.centre;
+			toPlayer.y = 0.0f;
+
+			float dist2 = toPlayer.lengthSquare();
+			if (dist2 > 1e-8f)
+			{
+				float dist = sqrtf(dist2);
+				Vec3 nrm = toPlayer * (1.0f / dist);
+
+				float minDist = playerBounds.radius + enemyBounds.radius;
+
+				float penetration = minDist - dist;
+				candidate.centre += nrm * penetration;
+
+				Vec3 stepXZ = desiredStep;
+				stepXZ.y = 0.0f;
+
+				float into = stepXZ.Dot(stepXZ, nrm);
+				Vec3 slideStep = stepXZ - nrm * into;
+
+				BoundingSphere slid = playerBounds;
+				slid.centre = candidate.centre + slideStep;
+
+				if (!intersectsXZ(slid, enemyBounds))
+				{
+					cam.pos = slid.centre;
+				}
+				else
+				{
+					cam.pos = candidate.centre;
+				}
+			}
+		}
+
+		cam.pos.y = 3.5f;
 		playerBounds.centre = cam.pos;
+
+		float radius = 950.f;
+
+		float d2 = cam.pos.x * cam.pos.x + cam.pos.z * cam.pos.z;
+		if (d2 > radius * radius) {
+			float d = sqrtf(d2);
+			cam.pos.x = cam.pos.x / d * radius;
+			cam.pos.z = cam.pos.z / d * radius;
+		}
 
 		Matrix v = cam.viewMatrix();
 		Matrix camWorld = v.invert();
@@ -211,7 +280,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		core.beginRenderPass();
 
 		gun.draw(&core, gunW, vp);
-		enemyManager.draw(&core, vp);
+		Matrix enemyW = Matrix::scale(Vec3(0.01f, 0.01f, 0.01f)) * Matrix::translate(enemyLoc);
+		enemyManager.draw(&core, enemyW, vp);
 
 		bamboo.draw(&core, vp);
 		Matrix W;
