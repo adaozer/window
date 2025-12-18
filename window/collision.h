@@ -58,40 +58,38 @@ public:
 	}
 };
 
-static bool intersectsXZ(const BoundingSphere& a, const BoundingSphere& b)
-{
-	float dx = a.centre.x - b.centre.x;
-	float dz = a.centre.z - b.centre.z;
-	float rr = a.radius + b.radius;
-	return (dx * dx + dz * dz) < (rr * rr);
+static bool intersectsXZ(const BoundingSphere& a, const BoundingSphere& b) {
+	float dx = a.centre.x - b.centre.x; // Calculate x distance
+	float dz = a.centre.z - b.centre.z; // Calculate z distance
+	float rr = a.radius + b.radius; // Calculate radius squared.
+	return (dx * dx + dz * dz) < (rr * rr); // Simple distance check. Distance measured against radius to check for collision.
 }
 
 static bool sphereAABB_intersect(const BoundingSphere& s, const AABB& aabb) {
 	float cx = std::max(aabb.min.x, std::min(s.centre.x, aabb.max.x));
-	float cz = std::max(aabb.min.z, std::min(s.centre.z, aabb.max.z));
+	float cz = std::max(aabb.min.z, std::min(s.centre.z, aabb.max.z)); // Point on the aabb that is closest to the centre of the sphere
 
 	float dx = s.centre.x - cx;
-	float dz = s.centre.z - cz;
+	float dz = s.centre.z - cz; // Calculate the distance between the centre of the sphere and the closest point to the centre of the sphere.
 
-	return (dx * dx + dz * dz) < (s.radius * s.radius);
+	return (dx * dx + dz * dz) < (s.radius * s.radius); // Checking distance against radius again
 }
 
-static bool raySphereIntersect(const Ray& r, const BoundingSphere& s, float& outT)
-{
-	Vec3 oc = r.o - s.centre;
+static bool raySphereIntersect(const Ray& r, const BoundingSphere& s) {
+	Vec3 oc = r.o - s.centre; // distance between ray origin and centre of bounding sphere
 
-	float a = Vec3::Dot(r.dir, r.dir);                
-	float b = 2.0f * Vec3::Dot(oc, r.dir);
-	float c = Vec3::Dot(oc, oc) - s.radius * s.radius;
+	float a = Vec3::Dot(r.dir, r.dir); // direction squared of the ray
+	float b = 2.0f * Vec3::Dot(oc, r.dir); // ray pointing forward or away from the sphere
+	float c = Vec3::Dot(oc, oc) - s.radius * s.radius; // distance of ray origin to sphere centre
 
-	float disc = b * b - 4.0f * a * c;
-	if (disc < 0.0f) return false;
+	float q = b * b - 4.0f * a * c; // quadratic formula
+	if (q < 0.0f) return false; // quadratic formula test (no real roots = miss)
 
-	float sqrtDisc = sqrtf(disc);
-	float t0 = (-b - sqrtDisc) / (2.0f * a);
-	float t1 = (-b + sqrtDisc) / (2.0f * a);
+	float sqrtQ = sqrtf(q);
+	float t0 = (-b - sqrtQ) / (2.0f * a); // entry point to sphere
+	float t1 = (-b + sqrtQ) / (2.0f * a); // exit point from sphere
 
-	if (t0 > 0.0f) { outT = t0; return true; }
-	if (t1 > 0.0f) { outT = t1; return true; }
-	return false;
+	if (t0 > 0.0f) return true;  
+	if (t1 > 0.0f) return true; // make sure we can't shoot backwards and still register a hit
+	return false; // Means no contact so we return false
 }

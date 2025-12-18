@@ -136,6 +136,8 @@
     <ClInclude Include="descriptorheap.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Fence.h" />
+    <ClInclude Include="GamesEngineeringBase.h" />
+    <ClInclude Include="GEMLoader.h" />
     <ClInclude Include="GEMObject.h" />
     <ClInclude Include="Gun.h" />
     <ClInclude Include="InstancedObject.h" />
@@ -144,6 +146,7 @@
     <ClInclude Include="Plane.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>

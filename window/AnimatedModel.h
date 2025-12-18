@@ -7,25 +7,24 @@
 class AnimatedModel {
 public:
 	std::vector<Mesh*> meshes;
-	Animation animation;
+	Animation animation; // animation and the meshes
 
 	ShaderManager* shaderManager;
 	PSOManager psos;
 	VertexLayoutCache vertexLayoutCache;
 	Shader* vertexShader = nullptr;
-	Shader* pixelShader = nullptr;
+	Shader* pixelShader = nullptr; // Shaders and PSO Manager
 
-	GEMLoader::GEMAnimation anim;
-	std::vector<std::string> textureFilenames;
+	GEMLoader::GEMAnimation anim; // for debugging
+	std::vector<std::string> textureFilenames; // I ended up not using this
 
 	TextureManager* textureManager;
-	Texture* diffuseTex = nullptr;
-	Texture* normalTex = nullptr;
-	std::string filepath;
-	std::string filepath2;
+	Texture* diffuseTex = nullptr; // Texture manager and texture object
+	std::string filepath; // Filepath of the texture. 
 
-	AnimatedModel(ShaderManager* sm, TextureManager* tx, std::string _filepath, std::string _filepath2) : shaderManager(sm), 
-		textureManager(tx), filepath(_filepath), filepath2(_filepath2) {}
+	AnimatedModel(ShaderManager* sm, TextureManager* tx, std::string _filepath) : shaderManager(sm), textureManager(tx), 
+		filepath(_filepath) {} // Constructor for manager pointers and filepath
+
 	void load(Core* core, std::string filename)
 	{
 		GEMLoader::GEMModelLoader loader;
@@ -47,8 +46,7 @@ public:
 		vertexShader = shaderManager->loadShader(core, "vertexshader_animated.hlsl", true);
 		pixelShader = shaderManager->loadShader(core, "pixelshader_alphatesting.hlsl", false);
 		diffuseTex = textureManager->loadTexture(core, filepath);
-		//normalTex = textureManager->loadTexture(core, filepath2);
-		psos.createPSO(core, "AnimatedModel", vertexShader->shader, pixelShader->shader, vertexLayoutCache.getAnimatedLayout());
+		psos.createPSO(core, "AnimatedModel", vertexShader->shader, pixelShader->shader, vertexLayoutCache.getAnimatedLayout()); // create PSO and assign shaders and textures
 		memcpy(&animation.skeleton.globalInverse, &gemanimation.globalInverse, 16 * sizeof(float));
 		for (int i = 0; i < gemanimation.bones.size(); i++)
 		{
@@ -87,20 +85,16 @@ public:
 
 	void draw(Core* core, AnimationInstance* instance, Matrix& W, Matrix& VP)
 	{
-		psos.bind(core, "AnimatedModel");
+		psos.bind(core, "AnimatedModel"); // bind PSO
 		shaderManager->updateConstantVS("vertexshader_animated.hlsl", "staticMeshBuffer", "W", &W);
 		shaderManager->updateConstantVS("vertexshader_animated.hlsl", "staticMeshBuffer", "VP", &VP);
-		shaderManager->updateConstantVS("vertexshader_animated.hlsl", "staticMeshBuffer", "bones", instance->matrices);
-		Vec3 ld = Vec3(1, 1, 0).normalize();
-		Vec3 lc = Vec3(1, 1, 1);
-		//shaderManager->updateConstantPS("pixelshader_normalmapped.hlsl", "Lights", "lightDir", &ld);
-		//shaderManager->updateConstantPS("pixelshader_normalmapped.hlsl", "Lights", "lightColour", &lc);
-		vertexShader->apply(core);
-		//pixelShader->apply(core);
+		shaderManager->updateConstantVS("vertexshader_animated.hlsl", "staticMeshBuffer", "bones", instance->matrices); // update the cbuffers in the vertex shader
+		//bones updates as well as this is animated
+		vertexShader->apply(core); // apply updates
 
 		for (int i = 0; i < meshes.size(); i++) {
-			shaderManager->updateTexturePS(core, "diffuseTex", diffuseTex->heapOffset);
-			meshes[i]->draw(core);
+			shaderManager->updateTexturePS(core, "diffuseTex", diffuseTex->heapOffset); //bind texture to pixelshader
+			meshes[i]->draw(core); // mesh draw
 		}
 	}
 };

@@ -2,74 +2,87 @@
 #include "AnimationManager.h"
 #include "Gun.h"
 #include "Camera.h"
+#include <iostream>
 
 class Enemy {
 public:
-	AnimatedModel* model = nullptr;
-	AnimationInstance anim;
+	AnimatedModel* model = nullptr; // Model of the trex
+	AnimationInstance anim; // Animation Instance
 
-	std::string name = "TRex";
-	std::string currentAction;
+	std::string name = "TRex"; // Name of model to call later
+	std::string currentAction; // For the animation manager
 
 	bool isAlive = true;
-	int health = 200;
-	bool dying = false;
-	Vec3 pos;
+	int health = 200; // health and isAlive to check status
+	bool dying = false; // to let the death animation resolve
+	Vec3 pos; // Pos to draw
 
 	int damage = 25;
-	float moveSpeed = 20.f;
-	float chaseRange = 200.0f;
-	float attackRange = 12.0f;
+	float moveSpeed = 25.f; // Slower than the player to make the game playable
+	float chaseRange = 200.0f; // When the dinosaur will start chasing the player
 
+	bool attacking = false;
+	float attackRange = 12.0f; // Range when the dinosaur will attack
 	float attackCooldown = 0.0f;
-	float attackRate = 1.2f;
-	float yaw = 0.f;
+	float attackRate = 2.3f; // Basically invul param for the player
+	float yaw = 0.f; // To make it face the player while chasing it
 
 	void init(AnimatedModel* m, AnimationManager& animationManager, const Vec3& startPos) {
 		model = m;
 		pos = startPos;
-		anim.init(&model->animation, 0);
-		play(animationManager, AnimationName::Idle, true, true);
+		anim.init(&model->animation, 0); // Init model with correct starting position
+		play(animationManager, AnimationName::Idle, true, true); // Play idle animation at the start
 	}
 
 	void takeDamage(int damage, AnimationManager& animationManager) {
 		if (!isAlive) return;
-		if (dying) return;
-		health -= damage;
+		if (dying) return; // Don't take damage while actually dead/dying
+		health -= damage; // Take damage
 		if (health <= 0) {
-			die(animationManager);
+			die(animationManager); // Die if health < 0
 		}
 	}
 
 	void die(AnimationManager& animationManager) {
 		if (dying) return;
-		dying = true;
-		play(animationManager, AnimationName::Death, true, false);
+		dying = true; // Dying = true to make sure the animation resolves and nothing else happens
+		play(animationManager, AnimationName::Death, true, false); // Play death animation
 	}
 
 	void draw(Core* core, Matrix& W, Matrix& vp) {
 		if (!isAlive) return;
-		model->draw(core, &anim, W, vp);
+		model->draw(core, &anim, W, vp); // Draw if alive.
 	}
 
 	void update(float dt, AnimationManager& animationManager, Gun& gun, Camera& camera) {
 		if (!isAlive) return;
 		if (!currentAction.empty()) {
 			anim.update(currentAction, dt);
-		}
-		if (dying && anim.animationFinished()) {
-			isAlive = false;
+		} // update the animation instance
+		if (dying) {
+			if (anim.animationFinished()) {
+				isAlive = false; // if dying animation finished, destroy
+			}
 			return;
 		}
-		if (attackCooldown > 0.0f) attackCooldown -= dt;
+		if (attackCooldown > 0.0f) attackCooldown -= dt; // update attack cooldown
 
-		Vec3 toPlayer = camera.pos - pos;
-		toPlayer.y = 0.f;
-		float dist2 = toPlayer.lengthSquare();
-		float attack2 = attackRange * attackRange;
-		float chase2 = chaseRange * chaseRange;
-		if (dist2 <= attack2) {
+		if (attacking) {
+			if (anim.animationFinished()) {
+				attacking = false; // If attacking finished, go back to normal and keep chasing
+				play(animationManager, AnimationName::Run, false, true);
+			}
+			return;
+		}
+
+		Vec3 toPlayer = camera.pos - pos; // Distance between the player and the enemy
+		toPlayer.y = 0.f; // camera y = 3.5 so normalize y
+		float dist2 = toPlayer.lengthSquare(); // Calculate distance
+		float attack2 = attackRange * attackRange; // Radius for attacking
+		float chase2 = chaseRange * chaseRange; // Radius for chasing
+		if (dist2 <= attack2) { // If in attacking distance
 			if (attackCooldown <= 0.0f) {
+				attacking = true; // Play attack animation, deal damage, set attack cooldown
 				play(animationManager, AnimationName::Attack, true, false);
 				attackCooldown = attackRate;	
 				gun.takeDamage(damage);
@@ -80,47 +93,46 @@ public:
 			return;
 		}
 
-		if (dist2 <= chase2) {
-			Vec3 dir = toPlayer.normalize();
-
-			yaw = atan2f(dir.z, dir.x);
-
-			pos += dir * moveSpeed * dt;
-
-			play(animationManager, AnimationName::Run, false, true);
+		if (dist2 <= chase2 && !attacking) { // If in chasing distance
+			Vec3 dir = toPlayer.normalize(); 
+			yaw = atan2f(dir.x, dir.z); // To make the enemy face the player as it chases
+			pos += dir * moveSpeed * dt; // For walking
+			play(animationManager, AnimationName::Run, false, true); // Play run animation
 		}
-		else {
+		else { // If player is too far, idle
 			play(animationManager, AnimationName::Idle, false, true);
+			
 		}
 	}
 
 	void play(AnimationManager& animationManager, AnimationName action, bool restart, bool loop) {
-		if (!animationManager.has(name, action)) return;
+		if (!animationManager.has(name, action)) return; // Check if the animation actually exists, otherwise crash
 
-		const std::string& realAction = animationManager.get(name, action);
+		const std::string& realAction = animationManager.get(name, action); // get the actual string (08 fire instead of Attack etc.)
 		if (!restart && realAction == currentAction) return;
 
 		currentAction = realAction;
-		anim.currentAnimation = currentAction;
-		anim.looping = loop;
+		anim.currentAnimation = currentAction; // Run the action
+		anim.looping = loop; // For looping things like running animation while chasing, idle animation etc.
 
-		if (restart) anim.resetAnimationTime();
+		if (restart) anim.resetAnimationTime(); // Play the new action over the existing action (run should play over idle. 
+		// Idle shouldn't play over attack if attack is still ongoing
 	}
 };
 
 class EnemyManager {
-public:
-	std::vector<Enemy> enemies;
+public: // Simple enemy manager
+	std::vector<Enemy> enemies; // Enemy array. Right now there is only 1 enemy but this allows extendability if necessary
 
 	void spawn(AnimatedModel* model, AnimationManager& animationManager, const Vec3& spawnPos) {
 		Enemy e;
 		e.init(model, animationManager, spawnPos);
-		enemies.push_back(e);
+		enemies.push_back(e); // Init enemy model and add to array
 	}
 
 	void update(float dt, AnimationManager& animationManager, Gun& gun, Camera& camera) {
 		for (auto& e : enemies) {
-			e.update(dt, animationManager, gun, camera);
+			e.update(dt, animationManager, gun, camera); // Run update on each enemy, erase them from the array if they die
 		}
 
 		for (size_t i = 0; i < enemies.size();) {
@@ -135,8 +147,8 @@ public:
 
 	void draw(Core* core, Matrix& vp) {
 		for (auto& e : enemies) {
-			Matrix W = Matrix::scale(Vec3(0.03, 0.03, 0.03)) * Matrix::rotateY(e.yaw + -M_PI/2) * Matrix::translate(e.pos);
-			e.draw(core, W, vp);
+			Matrix W = Matrix::scale(Vec3(0.03, 0.03, 0.03)) * Matrix::rotateY(e.yaw) * Matrix::translate(e.pos);
+			e.draw(core, W, vp); // Draw enemy. Translate by pos as it updates. RotateY by yaw to make the enemy facing the player
 		}
 	}
 };

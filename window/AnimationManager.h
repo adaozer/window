@@ -9,22 +9,23 @@ enum class AnimationName {
 	Death,
 	Inspect,
 	Run
-};
+}; // Simple names so I don't have to keep saying "08 fire" instead of "Attack" or "05 inspect" instead of "Inspect"
 
 class AnimationManager {
 public:
 	std::unordered_map<std::string, std::unordered_map<AnimationName, std::string>> table;
 
 	void set(const std::string& modelId, AnimationName name, const std::string& clip) {
-		table[modelId][name] = clip;
+		table[modelId][name] = clip; // to set the animations at the correct places to begin with
+		// the format is ("Trex", Run, "run") to map trex run animation to "Run" in the animation manager (animation name enum)
 	}
 
 	const std::string& get(const std::string& modelId, AnimationName name) const {
-		return table.at(modelId).at(name);
+		return table.at(modelId).at(name); // map.get for a function to know the exact spot
 	}
 
-	bool has(const std::string& modelId, AnimationName name) const {
-		auto it = table.find(modelId);
+	bool has(const std::string& modelId, AnimationName name) const { 
+		auto it = table.find(modelId); // To check if an animation exists in the animation manager table. For error handling.
 		if (it == table.end()) return false;
 		return it->second.find(name) != it->second.end();
 	}
