@@ -35,7 +35,7 @@ void listAnimationNames(AnimatedModel am)
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
 	AllocConsole();
 	FILE* stream;
-	freopen_s(&stream, "CONOUT$", "w", stdout);
+	freopen_s(&stream, "CONOUT$", "w", stdout); // Console for debugging
 
 	Window win;
 	Core core;
